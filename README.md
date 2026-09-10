@@ -24,7 +24,10 @@ O pipeline é construído em seis entregas. Feito até agora:
   CSVs sobem para o Volume; uma tarefa confere que todos chegaram.
 - [x] **Bronze** — as 10 tabelas Delta da bronze, ingeridas sem nenhuma
   limpeza ou conversão de tipo (a sujeira da origem é preservada de propósito).
-- [ ] **Silver** — modelagem: tipos corretos, chaves conferidas.
+- [x] **Silver** — as 10 tabelas limpas e tipadas: CNPJ normalizado e
+  deduplicado, datas convertidas, devolução/cancelamento/vendedor-desligado
+  como colunas explícitas (nada é descartado) e regras de qualidade viradas
+  `CHECK CONSTRAINT` na própria tabela.
 - [ ] **Silver (qualidade)** — checagens de qualidade sobre a silver.
 - [ ] **Gold** — métricas e agregados de negócio.
 - [ ] **Gold (publicação)** — o que fica pronto para dashboard/consumo.
