@@ -63,6 +63,14 @@ dessa gold:
   por cliente), `gold.modelo_metricas` (histórico de treinos) e
   `gold.calibragem_holdout` (prova de que a taxa de compra sobe da faixa fria
   para a quente, sem precisar entender o que é AUC).
+- [x] **Fila e agente** — `gold.fila_semanal`: os 200 clientes elegíveis
+  (carteira vigente, vendedor ativo) com maior score, priorizados
+  globalmente e numerados por vendedor — nunca por cota igual —, com motivo
+  e sugestão de produto em português. Mais quatro funções SQL no Unity
+  Catalog (`priorizar_carteira`, `contexto_cliente`, `sugerir_produtos`,
+  `checar_disponibilidade`) que um agente consulta, uma página nova no
+  dashboard e o Genie Space atualizado para nunca inventar número, nome de
+  cliente ou quantidade de estoque.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).

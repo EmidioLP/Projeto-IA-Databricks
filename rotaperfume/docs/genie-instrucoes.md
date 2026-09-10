@@ -53,6 +53,17 @@ permitido nessa lista).
 - Receita, margem e ticket médio vêm sempre de `gold.fato_vendas` ou das
   views `gold.*` — nunca reconverta texto nem refaça `CAST`.
 
+## FILA E AGENTE
+
+- `gold.fila_semanal` já traz os 200 clientes priorizados da semana, um
+  vendedor por linha, com motivo e sugestão em português — não recalcule o
+  ranking nem o motivo, leia direto da tabela.
+- `gold.score_propensao` tem o score bruto (0 a 1) e a faixa (Fria/Morna/Quente/Muito
+  quente) de todo cliente elegível, mesmo quem não entrou no top 200 da
+  semana.
+- Use sempre as tabelas e funções deste espaço. Nunca invente número, nome
+  de cliente ou quantidade de estoque.
+
 ## Instructions you must follow when providing summaries
 
 - Receita = `SUM(receita)`. Margem = `SUM(margem)`. Ticket médio =

@@ -18,12 +18,16 @@
 #                                   registra lakehouse_rotaperfume.gold.propensao_compra no UC com
 #                                   alias @prod (só depois dos 3 gates passarem), e grava
 #                                   gold.score_propensao/modelo_metricas/calibragem_holdout
+#   [x] prompt 3: ml_fila          - gold.fila_semanal (200 clientes priorizados por vendedor, com
+#                                   motivo e sugestão em português) + quatro funções SQL no UC que
+#                                   um agente consulta (priorizar_carteira, contexto_cliente,
+#                                   sugerir_produtos, checar_disponibilidade)
 #
 # raw_conferencia -> bronze_ingestao: sequencial. As quatro tasks silver_*
 # dependem só de bronze_ingestao e rodam em paralelo entre si. As tasks
 # gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts) e daí se
-# ramificam em três cadeias paralelas: testes -> ml_features -> ml_modelo (o
-# treino não pode rodar em dado que ainda não passou nos testes de
+# ramificam em três cadeias paralelas: testes -> ml_features -> ml_modelo ->
+# ml_fila (o treino não pode rodar em dado que ainda não passou nos testes de
 # qualidade, mas não precisa esperar as views de negócio), e
 # metricas_de_negocio -> auditoria_de_metadado (a auditoria depende das
 # views que metricas_de_negocio acabou de criar, não só de gold_marts).
@@ -117,6 +121,13 @@ resources:
             notebook_path: ../src/ml/12-modelo.py
             base_parameters:
               catalog: ${var.catalog}
+        - task_key: ml_fila
+          depends_on:
+            - task_key: ml_modelo
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ml/13-fila.sql
         - task_key: metricas_de_negocio
           depends_on:
             - task_key: gold_marts

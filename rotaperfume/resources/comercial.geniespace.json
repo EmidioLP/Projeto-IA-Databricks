@@ -37,10 +37,12 @@
       { "identifier": "lakehouse_rotaperfume.gold.dim_vendedor" },
       { "identifier": "lakehouse_rotaperfume.gold.efeito_lancamento" },
       { "identifier": "lakehouse_rotaperfume.gold.fato_vendas" },
+      { "identifier": "lakehouse_rotaperfume.gold.fila_semanal" },
       { "identifier": "lakehouse_rotaperfume.gold.margem_por_categoria" },
       { "identifier": "lakehouse_rotaperfume.gold.ranking_marcas" },
       { "identifier": "lakehouse_rotaperfume.gold.receita_mensal" },
-      { "identifier": "lakehouse_rotaperfume.gold.ruptura_por_marca" }
+      { "identifier": "lakehouse_rotaperfume.gold.ruptura_por_marca" },
+      { "identifier": "lakehouse_rotaperfume.gold.score_propensao" }
     ]
   },
   "instructions": {
@@ -104,6 +106,11 @@
           "## CONSTRAINTS",
           "- Nunca consulte lakehouse_rotaperfume.bronze ou lakehouse_rotaperfume.silver - somente lakehouse_rotaperfume.gold.",
           "- Receita, margem e ticket médio vêm sempre de gold.fato_vendas ou das views gold.* - nunca reconverta texto nem refaça CAST.",
+          "",
+          "## FILA E AGENTE",
+          "- gold.fila_semanal já traz os 200 clientes priorizados da semana, um vendedor por linha, com motivo e sugestão em português - não recalcule o ranking nem o motivo, leia direto da tabela.",
+          "- gold.score_propensao tem o score bruto (0 a 1) e a faixa (Fria/Morna/Quente/Muito quente) de todo cliente elegível, mesmo quem não entrou no top 200 da semana.",
+          "- Use sempre as tabelas e funções deste espaço. Nunca invente número, nome de cliente ou quantidade de estoque.",
           "",
           "## Instructions you must follow when providing summaries",
           "- Receita = SUM(receita). Margem = SUM(margem). Ticket médio = SUM(receita) / COUNT(DISTINCT pedido_id). Atingimento de meta = 100 * receita do vendedor no mês / meta_mensal do vendedor. Churn/cliente em risco = mais de 90 dias sem pedido (gold.clientes_em_risco já aplica isso).",
