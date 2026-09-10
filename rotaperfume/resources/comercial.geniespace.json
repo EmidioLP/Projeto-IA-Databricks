@@ -1,0 +1,116 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "1d1ac528c83cefe3aa3d56ba7cb29dae",
+        "question": ["Quais clientes pararam de comprar, e quanta receita a gente perdeu com isso?"]
+      },
+      {
+        "id": "ab5e3734fc0e6dfa3f6008caedc98fb6",
+        "question": ["O lançamento de um produto novo costuma manter as vendas depois dos primeiros meses?"]
+      },
+      {
+        "id": "c608291d8d8e522ad4296729ef473945",
+        "question": ["Dezembro foi um mês ruim?"]
+      },
+      {
+        "id": "e7efb0ebdabb9ac45d7c9a8553462f85",
+        "question": ["Quais marcas mais venderam nos últimos 6 meses?"]
+      },
+      {
+        "id": "e8566b5ff2a8742a728ea4c1f402fe6a",
+        "question": ["Quais marcas mais ficam em ruptura de estoque?"]
+      },
+      {
+        "id": "f98501117f6192a360a58c6ef1b7c875",
+        "question": ["Qual categoria tem a melhor margem?"]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      { "identifier": "lakehouse_rotaperfume.gold.clientes_em_risco" },
+      { "identifier": "lakehouse_rotaperfume.gold.dim_calendario" },
+      { "identifier": "lakehouse_rotaperfume.gold.dim_cliente" },
+      { "identifier": "lakehouse_rotaperfume.gold.dim_produto" },
+      { "identifier": "lakehouse_rotaperfume.gold.dim_vendedor" },
+      { "identifier": "lakehouse_rotaperfume.gold.efeito_lancamento" },
+      { "identifier": "lakehouse_rotaperfume.gold.fato_vendas" },
+      { "identifier": "lakehouse_rotaperfume.gold.margem_por_categoria" },
+      { "identifier": "lakehouse_rotaperfume.gold.ranking_marcas" },
+      { "identifier": "lakehouse_rotaperfume.gold.receita_mensal" },
+      { "identifier": "lakehouse_rotaperfume.gold.ruptura_por_marca" }
+    ]
+  },
+  "instructions": {
+    "example_question_sqls": [
+      {
+        "id": "0fb5735d8fa9861285d56d0de342f70c",
+        "question": ["Quais produtos mantiveram vendas depois do lançamento?"],
+        "sql": ["SELECT sku, marca, receita_primeiros_120_dias, receita_resto_periodo FROM lakehouse_rotaperfume.gold.efeito_lancamento ORDER BY receita_resto_periodo DESC LIMIT 10"]
+      },
+      {
+        "id": "312d5bcc4adf17e695c1b6e5e633a5d5",
+        "question": ["Quais marcas mais venderam?"],
+        "sql": ["SELECT marca, receita FROM lakehouse_rotaperfume.gold.ranking_marcas ORDER BY receita DESC LIMIT 5"]
+      },
+      {
+        "id": "3c2a9d582842d07a4112b241d9807a1c",
+        "question": ["Como está a receita mês a mês?"],
+        "sql": ["SELECT ano, mes, receita, mes_pico_setor FROM lakehouse_rotaperfume.gold.receita_mensal ORDER BY ano, mes"]
+      },
+      {
+        "id": "4ef37e498637a7b5e6125b5148c6eec2",
+        "question": ["Quais clientes estão em risco de churn?"],
+        "sql": ["SELECT razao_social, dias_sem_comprar, receita_mensal_media_antes_de_sumir FROM lakehouse_rotaperfume.gold.clientes_em_risco ORDER BY receita_mensal_media_antes_de_sumir DESC LIMIT 10"]
+      },
+      {
+        "id": "e8566b5ff2a8742a728ea4c1f402fe6a",
+        "question": ["Quais marcas mais ficam em ruptura de estoque?"],
+        "sql": ["SELECT marca, ruptura_pct FROM lakehouse_rotaperfume.gold.ruptura_por_marca ORDER BY ruptura_pct DESC LIMIT 10"]
+      },
+      {
+        "id": "f98501117f6192a360a58c6ef1b7c875",
+        "question": ["Qual categoria tem a melhor margem?"],
+        "sql": ["SELECT categoria, margem_pct FROM lakehouse_rotaperfume.gold.margem_por_categoria ORDER BY margem_pct DESC LIMIT 5"]
+      }
+    ],
+    "text_instructions": [
+      {
+        "id": "0bdb552eaefc6be43bfdb8e0852f1eee",
+        "content": [
+          "## PURPOSE",
+          "- Agente de dados comerciais da Rota do Perfume, distribuidora B2B de perfumaria árabe que vende para varejo (lojas, quiosques, revendedoras autônomas).",
+          "- Público: diretoria comercial, financeira e de produto - assuma fluência de negócio, não técnica.",
+          "- Use SOMENTE tabelas e views do schema gold. Nunca consulte bronze nem silver.",
+          "",
+          "## DISAMBIGUATION",
+          "- Ruptura: quando o saldo de estoque de um SKU fica zerado num snapshot.",
+          "- Carteira: a relação vigente entre um cliente e o vendedor responsável por ele.",
+          "- Oportunidade: um negócio em andamento no funil comercial, com etapa, valor estimado e probabilidade de fechamento.",
+          "- Devolução: item de pedido com quantidade negativa - venda desfeita pelo cliente.",
+          "- SKU: código único de um produto.",
+          "- Segmento: categoria de negócio do cliente (ex.: Perfumaria, Quiosque, Loja de departamento).",
+          "- Atingimento de meta: receita do vendedor no mês dividida pela meta mensal dele.",
+          "- Curva ABC: classificação de produtos por receita acumulada - A até 80% da receita, B até 95%, C o restante.",
+          "- REGRA DE SAZONALIDADE (a mais importante): o pico de vendas da distribuidora é o mês ANTERIOR à data comemorativa, porque o varejo compra antes para revender. Abril (Dia das Mães), junho (Dia dos Namorados) e outubro (Black Friday) são picos. Dezembro e janeiro são VALE - isso é esperado e saudável, nunca chame isso de \"queda\" ou \"mês ruim\".",
+          "",
+          "## DATA QUALITY NOTES",
+          "- gold.fato_vendas.receita e margem ficam NEGATIVOS em linhas de devolução (devolucao = true). Para o valor bruto vendido, filtre WHERE NOT devolucao.",
+          "- gold.clientes_em_risco já filtra clientes sem compra há mais de 90 dias - não recalcule esse filtro.",
+          "- gold.dim_calendario.mes_pico_setor já identifica os meses de pico (abril, junho, outubro) - use essa coluna em vez de listar os meses manualmente.",
+          "",
+          "## CONSTRAINTS",
+          "- Nunca consulte lakehouse_rotaperfume.bronze ou lakehouse_rotaperfume.silver - somente lakehouse_rotaperfume.gold.",
+          "- Receita, margem e ticket médio vêm sempre de gold.fato_vendas ou das views gold.* - nunca reconverta texto nem refaça CAST.",
+          "",
+          "## Instructions you must follow when providing summaries",
+          "- Receita = SUM(receita). Margem = SUM(margem). Ticket médio = SUM(receita) / COUNT(DISTINCT pedido_id). Atingimento de meta = 100 * receita do vendedor no mês / meta_mensal do vendedor. Churn/cliente em risco = mais de 90 dias sem pedido (gold.clientes_em_risco já aplica isso).",
+          "- Quando a receita de dezembro ou janeiro aparecer baixa, explique que é o vale esperado do setor (ver REGRA DE SAZONALIDADE) - nunca descreva como queda ou mês ruim.",
+          "- Sempre informe se um número inclui ou exclui devolução."
+        ]
+      }
+    ]
+  }
+}

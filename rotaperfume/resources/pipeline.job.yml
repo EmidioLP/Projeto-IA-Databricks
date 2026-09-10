@@ -5,11 +5,16 @@
 #   [x] prompt 3: silver_*        - bronze -> silver: chaves conferidas, tipos corretos, contrato via CHECK
 #   [x] prompt 4: gold_*, testes  - silver -> gold: dimensões, fato_vendas, marts por diretoria, e
 #                                   9 testes de qualidade que derrubam o job se falharem
+#   [x] prompt 5: dashboard       - dashboard AI/BI comercial versionado como recurso do bundle
+#   [x] prompt 6: metricas/auditoria - views com nome de negócio + auditoria de metadado (raise_error
+#                                   se faltar COMMENT) + Genie space como recurso do bundle
 #
 # raw_conferencia -> bronze_ingestao: sequencial. As quatro tasks silver_*
 # dependem só de bronze_ingestao e rodam em paralelo entre si. As tasks
-# gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts -> testes)
-# porque cada uma lê o resultado da anterior; testes é a última de propósito.
+# gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts) e daí se
+# ramificam em duas cadeias paralelas: testes, e
+# metricas_de_negocio -> auditoria_de_metadado (a auditoria depende das
+# views que metricas_de_negocio acabou de criar, não só de gold_marts).
 resources:
   jobs:
     rotaperfume_pipeline:
@@ -86,6 +91,20 @@ resources:
             warehouse_id: ${var.warehouse_id}
             file:
               path: ../src/gold/08-testes.sql
+        - task_key: metricas_de_negocio
+          depends_on:
+            - task_key: gold_marts
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/09-metricas-negocio.sql
+        - task_key: auditoria_de_metadado
+          depends_on:
+            - task_key: metricas_de_negocio
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/10-auditoria-metadado.sql
       schedule:
         quartz_cron_expression: "0 0 6 * * ?"
         timezone_id: America/Sao_Paulo

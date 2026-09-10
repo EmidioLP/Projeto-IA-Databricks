@@ -18,7 +18,7 @@ Usado apenas para fins de estudo e portfólio — não é um projeto em produç�
 
 ## Progresso
 
-O pipeline é construído em entregas incrementais, uma por aula. Feito até agora:
+O pipeline foi construído em seis entregas incrementais, uma por aula — está completo:
 
 - [x] **Raw** — catálogo, schemas e Volume do Unity Catalog como código; os 10
   CSVs sobem para o Volume; uma tarefa confere que todos chegaram.
@@ -36,6 +36,11 @@ O pipeline é construído em entregas incrementais, uma por aula. Feito até ago
   marcas, margem por categoria, canal, top clientes) versionado como
   `.lvdash.json` e declarado como recurso do bundle, subindo junto com o
   deploy — sem clicar na UI.
+- [x] **Agentes de IA** — seis views com nome de negócio (`ranking_marcas`,
+  `clientes_em_risco`, etc.) com `COMMENT` respondendo à pergunta que cada
+  uma resolve, uma auditoria que derruba o job se faltar metadado, e um
+  Genie space como código (instruções de negócio, glossário e a regra de
+  sazonalidade do setor) apontando para a gold — não mais para a bronze.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).

@@ -85,6 +85,8 @@ FROM base;
 COMMENT ON TABLE lakehouse_rotaperfume.gold.fato_vendas IS
   'Uma linha por item de pedido faturado (pedidos cancelados excluídos, devoluções incluídas). É o único fato de vendas - todo mart comercial deriva dele.';
 
+ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN item_id COMMENT 'Identificador do item do pedido - chave técnica, um valor por linha.';
+ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN pedido_id COMMENT 'Pedido ao qual o item pertence.';
 ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN data_pedido COMMENT 'Data em que o pedido foi feito.';
 ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN ano COMMENT 'Ano do pedido - chave de partição.';
 ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN mes COMMENT 'Mês do pedido (1-12) - chave de partição.';
@@ -104,3 +106,4 @@ ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN receita COMMENT 
 ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN custo COMMENT 'quantidade * custo unitário do produto.';
 ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN margem COMMENT 'Receita menos custo do produto. Não considera desconto comercial nem frete.';
 ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN devolucao COMMENT 'true quando este item é uma devolução (quantidade e receita negativas).';
+ALTER TABLE lakehouse_rotaperfume.gold.fato_vendas ALTER COLUMN _processado_em COMMENT 'Timestamp de quando esta linha foi processada pela gold.';
