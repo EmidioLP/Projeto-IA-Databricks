@@ -2,13 +2,14 @@
 #
 #   [x] 1. raw_conferencia   - confere que os 10 CSVs chegaram ao Volume bronze.raw
 #   [x] 2. bronze_ingestao   - raw -> tabelas bronze (uma por arquivo)
-#   [ ] 3. silver_modelagem  - bronze -> silver: chaves conferidas, tipos corretos
+#   [x] 3. silver_*          - bronze -> silver: chaves conferidas, tipos corretos, contrato via CHECK
 #   [ ] 4. silver_qualidade  - checagens de qualidade sobre a silver
 #   [ ] 5. gold_agregados    - silver -> gold: métricas de negócio
 #   [ ] 6. gold_publicacao   - o que fica pronto para dashboard/consumo
 #
 # Cada task depende da anterior; a ordem é o conteúdo - se a conferência
-# falhar, a bronze não roda.
+# falhar, a bronze não roda. As quatro tasks silver_* dependem só de
+# bronze_ingestao, não umas das outras - rodam em paralelo.
 resources:
   jobs:
     rotaperfume_pipeline:
@@ -26,6 +27,34 @@ resources:
             notebook_path: ../src/bronze/ingestao.py
             base_parameters:
               catalog: ${var.catalog}
+        - task_key: silver_clientes
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/01-clientes.sql
+        - task_key: silver_pedidos
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/02-pedidos.sql
+        - task_key: silver_itens_e_produtos
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/03-itens-e-produtos.sql
+        - task_key: silver_crm_e_financeiro
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/04-crm-e-financeiro.sql
       schedule:
         quartz_cron_expression: "0 0 6 * * ?"
         timezone_id: America/Sao_Paulo

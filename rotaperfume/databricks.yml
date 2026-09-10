@@ -13,6 +13,10 @@ variables:
     description: The catalog to use
   schema:
     description: The schema to use
+  warehouse_id:
+    description: >-
+      SQL warehouse usado pelas tasks sql_task (silver). Diferente do
+      notebook_task, sql_task não faz auto-detect de warehouse.
 
 targets:
   dev:
@@ -28,6 +32,7 @@ targets:
     variables:
       catalog: lakehouse_rotaperfume
       schema: dev
+      warehouse_id: 209cc73613ce41e6
   prod:
     mode: production
     workspace:
@@ -37,6 +42,7 @@ targets:
     variables:
       catalog: lakehouse_rotaperfume
       schema: prod
+      warehouse_id: 209cc73613ce41e6
     permissions:
       - user_name: emidio551@gmail.com
         level: CAN_MANAGE
