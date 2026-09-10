@@ -1,15 +1,15 @@
-# Job rotaperfume_pipeline - cresce uma task por entrega ao longo das 6 noites:
+# Job rotaperfume_pipeline - cresce uma tarefa por entrega:
 #
-#   [x] 1. raw_conferencia   - confere que os 10 CSVs chegaram ao Volume bronze.raw
-#   [x] 2. bronze_ingestao   - raw -> tabelas bronze (uma por arquivo)
-#   [x] 3. silver_*          - bronze -> silver: chaves conferidas, tipos corretos, contrato via CHECK
-#   [ ] 4. silver_qualidade  - checagens de qualidade sobre a silver
-#   [ ] 5. gold_agregados    - silver -> gold: métricas de negócio
-#   [ ] 6. gold_publicacao   - o que fica pronto para dashboard/consumo
+#   [x] prompt 1: raw_conferencia - confere que os 10 CSVs chegaram ao Volume bronze.raw
+#   [x] prompt 2: bronze_ingestao - raw -> tabelas bronze (uma por arquivo)
+#   [x] prompt 3: silver_*        - bronze -> silver: chaves conferidas, tipos corretos, contrato via CHECK
+#   [x] prompt 4: gold_*, testes  - silver -> gold: dimensões, fato_vendas, marts por diretoria, e
+#                                   9 testes de qualidade que derrubam o job se falharem
 #
-# Cada task depende da anterior; a ordem é o conteúdo - se a conferência
-# falhar, a bronze não roda. As quatro tasks silver_* dependem só de
-# bronze_ingestao, não umas das outras - rodam em paralelo.
+# raw_conferencia -> bronze_ingestao: sequencial. As quatro tasks silver_*
+# dependem só de bronze_ingestao e rodam em paralelo entre si. As tasks
+# gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts -> testes)
+# porque cada uma lê o resultado da anterior; testes é a última de propósito.
 resources:
   jobs:
     rotaperfume_pipeline:
@@ -55,6 +55,37 @@ resources:
             warehouse_id: ${var.warehouse_id}
             file:
               path: ../src/silver/04-crm-e-financeiro.sql
+        - task_key: gold_dimensoes
+          depends_on:
+            - task_key: silver_clientes
+            - task_key: silver_pedidos
+            - task_key: silver_itens_e_produtos
+            - task_key: silver_crm_e_financeiro
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/05-dimensoes.sql
+        - task_key: gold_fato_vendas
+          depends_on:
+            - task_key: gold_dimensoes
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/06-fato-vendas.sql
+        - task_key: gold_marts
+          depends_on:
+            - task_key: gold_fato_vendas
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/07-marts.sql
+        - task_key: testes
+          depends_on:
+            - task_key: gold_marts
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/08-testes.sql
       schedule:
         quartz_cron_expression: "0 0 6 * * ?"
         timezone_id: America/Sao_Paulo
