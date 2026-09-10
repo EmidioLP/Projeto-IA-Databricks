@@ -1,0 +1,36 @@
+# Os schemas (as camadas do medallion) e o Volume onde os arquivos raw chegam.
+#
+# O catalog NÃO está aqui, mesmo a CLI suportando `resources.catalogs`: neste
+# workspace (Free Edition, Default Storage habilitado) a API de Unity Catalog
+# recusa CREATE CATALOG sem uma managed location, que a conta free não tem -
+#   Error: Metastore storage root URL does not exist. Default Storage is
+#   enabled in your account. (400 INVALID_STATE)
+# O caminho que funciona é `CREATE CATALOG IF NOT EXISTS` via SQL - ver
+# scripts/criar-catalogo.sh, que precisa rodar (uma vez) antes do primeiro
+# `bundle deploy`.
+#
+# schema_name do volume referencia o resource (não um literal) de propósito:
+# isso cria uma dependência explícita no grafo do Terraform, garantindo que o
+# schema bronze exista antes do volume.
+resources:
+  schemas:
+    bronze:
+      catalog_name: ${var.catalog}
+      name: bronze
+      comment: Raw e primeira camada de tabelas - dado como chegou da origem, sem transformação.
+    silver:
+      catalog_name: ${var.catalog}
+      name: silver
+      comment: Dado limpo e modelado - chaves conferidas, tipos corretos, pronto para ser cruzado.
+    gold:
+      catalog_name: ${var.catalog}
+      name: gold
+      comment: Métricas e agregados de negócio - o que dashboards e relatórios consultam.
+
+  volumes:
+    raw:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.bronze.name}
+      name: raw
+      volume_type: MANAGED
+      comment: Arquivos originais (CSV) dos sistemas de origem, byte a byte - a prova de onde cada número veio.

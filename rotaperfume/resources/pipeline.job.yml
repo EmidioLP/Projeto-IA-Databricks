@@ -1,0 +1,31 @@
+# Job rotaperfume_pipeline - cresce uma task por entrega ao longo das 6 noites:
+#
+#   [x] 1. raw_conferencia   - confere que os 10 CSVs chegaram ao Volume bronze.raw
+#   [x] 2. bronze_ingestao   - raw -> tabelas bronze (uma por arquivo)
+#   [ ] 3. silver_modelagem  - bronze -> silver: chaves conferidas, tipos corretos
+#   [ ] 4. silver_qualidade  - checagens de qualidade sobre a silver
+#   [ ] 5. gold_agregados    - silver -> gold: métricas de negócio
+#   [ ] 6. gold_publicacao   - o que fica pronto para dashboard/consumo
+#
+# Cada task depende da anterior; a ordem é o conteúdo - se a conferência
+# falhar, a bronze não roda.
+resources:
+  jobs:
+    rotaperfume_pipeline:
+      name: rotaperfume_pipeline
+      tasks:
+        - task_key: raw_conferencia
+          notebook_task:
+            notebook_path: ../src/raw/conferencia.py
+            base_parameters:
+              catalog: ${var.catalog}
+        - task_key: bronze_ingestao
+          depends_on:
+            - task_key: raw_conferencia
+          notebook_task:
+            notebook_path: ../src/bronze/ingestao.py
+            base_parameters:
+              catalog: ${var.catalog}
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: America/Sao_Paulo

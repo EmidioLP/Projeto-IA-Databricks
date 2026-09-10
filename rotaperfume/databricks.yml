@@ -1,0 +1,42 @@
+# This is a Declarative Automation Bundle definition for rotaperfume.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: rotaperfume
+  uuid: 5c8b8909-5905-40ff-a21d-8f3798f7f031
+
+include:
+  - resources/*.yml
+
+# Variable declarations. These variables are assigned in the dev/prod targets below.
+variables:
+  catalog:
+    description: The catalog to use
+  schema:
+    description: The schema to use
+
+targets:
+  dev:
+    # NÃO usar 'mode: development' aqui: ele prefixa o nome dos recursos com
+    # '[dev <usuario>]' - inclusive os SCHEMAS do Unity Catalog, que virariam
+    # dev_<usuario>_bronze e quebrariam todo o SQL escrito contra bronze/silver/gold.
+    # Em vez disso, pausamos o agendamento explicitamente abaixo.
+    default: true
+    presets:
+      trigger_pause_status: PAUSED
+    workspace:
+      host: https://dbc-928c1e6a-62a9.cloud.databricks.com
+    variables:
+      catalog: lakehouse_rotaperfume
+      schema: dev
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-928c1e6a-62a9.cloud.databricks.com
+      # We explicitly deploy to /Workspace/Users/emidio551@gmail.com to make sure we only have a single copy.
+      root_path: /Workspace/Users/emidio551@gmail.com/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: lakehouse_rotaperfume
+      schema: prod
+    permissions:
+      - user_name: emidio551@gmail.com
+        level: CAN_MANAGE
