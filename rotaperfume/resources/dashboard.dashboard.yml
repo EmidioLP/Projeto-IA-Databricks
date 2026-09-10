@@ -1,0 +1,11 @@
+# Dashboard comercial como código: sobe junto com o bundle, sem clicar na UI.
+# dataset_catalog/dataset_schema resolvem os nomes de tabela puros usados nas
+# queries do dashboard-comercial.lvdash.json (ex.: FROM fato_vendas).
+resources:
+  dashboards:
+    dashboard_comercial:
+      display_name: "Rotaperfume - Comercial"
+      file_path: dashboard-comercial.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      dataset_catalog: ${var.catalog}
+      dataset_schema: gold

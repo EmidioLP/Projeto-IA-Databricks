@@ -32,6 +32,10 @@ O pipeline é construído em entregas incrementais, uma por aula. Feito até ago
   pedido (devolução dentro, cancelamento fora), três data marts por
   diretoria e 9 testes de qualidade que derrubam o job (`raise_error`) se a
   receita da gold não bater com a da silver, centavo a centavo.
+- [x] **Dashboard** — o dashboard AI/BI comercial (KPIs, receita por mês,
+  marcas, margem por categoria, canal, top clientes) versionado como
+  `.lvdash.json` e declarado como recurso do bundle, subindo junto com o
+  deploy — sem clicar na UI.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).
