@@ -9,12 +9,20 @@
 #   [x] prompt 6: metricas/auditoria - views com nome de negócio + auditoria de metadado (raise_error
 #                                   se faltar COMMENT) + Genie space como recurso do bundle
 #
+#   ciência de dados:
+#   [x] prompt 1: ml_features      - gold.fato_vendas/silver.oportunidades/silver.visitas ->
+#                                   gold.features_treino (com rótulo comprou_em_7d) e
+#                                   gold.features_cliente (sem rótulo), sempre com corte
+#                                   ponto-no-tempo via montar_features(referencia)
+#
 # raw_conferencia -> bronze_ingestao: sequencial. As quatro tasks silver_*
 # dependem só de bronze_ingestao e rodam em paralelo entre si. As tasks
 # gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts) e daí se
-# ramificam em duas cadeias paralelas: testes, e
-# metricas_de_negocio -> auditoria_de_metadado (a auditoria depende das
-# views que metricas_de_negocio acabou de criar, não só de gold_marts).
+# ramificam em três cadeias paralelas: testes -> ml_features (o treino não
+# pode rodar em dado que ainda não passou nos testes de qualidade, mas não
+# precisa esperar as views de negócio), e metricas_de_negocio ->
+# auditoria_de_metadado (a auditoria depende das views que
+# metricas_de_negocio acabou de criar, não só de gold_marts).
 resources:
   jobs:
     rotaperfume_pipeline:
@@ -91,6 +99,13 @@ resources:
             warehouse_id: ${var.warehouse_id}
             file:
               path: ../src/gold/08-testes.sql
+        - task_key: ml_features
+          depends_on:
+            - task_key: testes
+          notebook_task:
+            notebook_path: ../src/ml/11-features.py
+            base_parameters:
+              catalog: ${var.catalog}
         - task_key: metricas_de_negocio
           depends_on:
             - task_key: gold_marts

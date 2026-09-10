@@ -14,7 +14,9 @@ Usado apenas para fins de estudo e portfólio — não é um projeto em produç�
   que sobe esses CSVs para o Unity Catalog e constrói um pipeline em camadas
   (raw → bronze → silver → gold), tudo como código.
 - **`.llm/`** — os roteiros de aula (prompts) que guiaram cada entrega do
-  `rotaperfume`.
+  `rotaperfume`, em duas trilhas: `engenharia-de-dados/` (as seis entregas
+  abaixo) e `ciencia-de-dados/` (a trilha de features e modelo, começando
+  pela entrega de features).
 
 ## Progresso
 
@@ -41,6 +43,16 @@ O pipeline foi construído em seis entregas incrementais, uma por aula — está
   uma resolve, uma auditoria que derruba o job se faltar metadado, e um
   Genie space como código (instruções de negócio, glossário e a regra de
   sazonalidade do setor) apontando para a gold — não mais para a bronze.
+
+Uma segunda trilha, de ciência de dados, começou a ser construída em cima
+dessa gold:
+
+- [x] **Features** — `gold.features_treino` e `gold.features_cliente`,
+  geradas pela mesma função `montar_features(referencia)` com datas de corte
+  diferentes: 20 features de RFM, ritmo de compra, CRM e mix de produto, cada
+  fonte filtrada por `< referencia` para nunca vazar dado do futuro para o
+  treino. `gold.dim_cliente` nunca entra aqui, porque agrega o histórico
+  inteiro sem corte.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).
