@@ -14,15 +14,19 @@
 #                                   gold.features_treino (com rótulo comprou_em_7d) e
 #                                   gold.features_cliente (sem rótulo), sempre com corte
 #                                   ponto-no-tempo via montar_features(referencia)
+#   [x] prompt 2: ml_modelo        - treina HistGradientBoostingClassifier em gold.features_treino,
+#                                   registra lakehouse_rotaperfume.gold.propensao_compra no UC com
+#                                   alias @prod (só depois dos 3 gates passarem), e grava
+#                                   gold.score_propensao/modelo_metricas/calibragem_holdout
 #
 # raw_conferencia -> bronze_ingestao: sequencial. As quatro tasks silver_*
 # dependem só de bronze_ingestao e rodam em paralelo entre si. As tasks
 # gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts) e daí se
-# ramificam em três cadeias paralelas: testes -> ml_features (o treino não
-# pode rodar em dado que ainda não passou nos testes de qualidade, mas não
-# precisa esperar as views de negócio), e metricas_de_negocio ->
-# auditoria_de_metadado (a auditoria depende das views que
-# metricas_de_negocio acabou de criar, não só de gold_marts).
+# ramificam em três cadeias paralelas: testes -> ml_features -> ml_modelo (o
+# treino não pode rodar em dado que ainda não passou nos testes de
+# qualidade, mas não precisa esperar as views de negócio), e
+# metricas_de_negocio -> auditoria_de_metadado (a auditoria depende das
+# views que metricas_de_negocio acabou de criar, não só de gold_marts).
 resources:
   jobs:
     rotaperfume_pipeline:
@@ -104,6 +108,13 @@ resources:
             - task_key: testes
           notebook_task:
             notebook_path: ../src/ml/11-features.py
+            base_parameters:
+              catalog: ${var.catalog}
+        - task_key: ml_modelo
+          depends_on:
+            - task_key: ml_features
+          notebook_task:
+            notebook_path: ../src/ml/12-modelo.py
             base_parameters:
               catalog: ${var.catalog}
         - task_key: metricas_de_negocio

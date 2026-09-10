@@ -53,6 +53,16 @@ dessa gold:
   fonte filtrada por `< referencia` para nunca vazar dado do futuro para o
   treino. `gold.dim_cliente` nunca entra aqui, porque agrega o histórico
   inteiro sem corte.
+- [x] **Modelo** — um `HistGradientBoostingClassifier` treinado em cima das
+  features acima, medido contra três baselines de regra simples (o melhor
+  vira o gate 1) e três testes que derrubam a tarefa (o modelo tem que bater
+  o melhor baseline por 0,05 de AUC, AUC abaixo de 0,99 — bom demais é
+  vazamento — e lift acima de 2,5 nos 200 primeiros da fila). Registrado no
+  Unity Catalog (`gold.propensao_compra`, alias `@prod`) só depois de passar
+  nos três testes, e usado para gravar `gold.score_propensao` (score e faixa
+  por cliente), `gold.modelo_metricas` (histórico de treinos) e
+  `gold.calibragem_holdout` (prova de que a taxa de compra sobe da faixa fria
+  para a quente, sem precisar entender o que é AUC).
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).
