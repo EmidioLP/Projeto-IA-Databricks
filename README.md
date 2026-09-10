@@ -18,7 +18,7 @@ Usado apenas para fins de estudo e portfólio — não é um projeto em produç�
 
 ## Progresso
 
-O pipeline é construído em seis entregas. Feito até agora:
+O pipeline é construído em entregas incrementais, uma por aula. Feito até agora:
 
 - [x] **Raw** — catálogo, schemas e Volume do Unity Catalog como código; os 10
   CSVs sobem para o Volume; uma tarefa confere que todos chegaram.
@@ -28,9 +28,10 @@ O pipeline é construído em seis entregas. Feito até agora:
   deduplicado, datas convertidas, devolução/cancelamento/vendedor-desligado
   como colunas explícitas (nada é descartado) e regras de qualidade viradas
   `CHECK CONSTRAINT` na própria tabela.
-- [ ] **Silver (qualidade)** — checagens de qualidade sobre a silver.
-- [ ] **Gold** — métricas e agregados de negócio.
-- [ ] **Gold (publicação)** — o que fica pronto para dashboard/consumo.
+- [x] **Gold** — dimensões conformadas, `fato_vendas` no grão de item de
+  pedido (devolução dentro, cancelamento fora), três data marts por
+  diretoria e 9 testes de qualidade que derrubam o job (`raise_error`) se a
+  receita da gold não bater com a da silver, centavo a centavo.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).
