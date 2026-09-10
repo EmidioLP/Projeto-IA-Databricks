@@ -42,4 +42,5 @@ Detalhes de arquitetura e comandos de desenvolvimento estão em
 
 ## Créditos
 
-Aula e roteiro original da Jornada de Dados: [lvgalvao/projeto-dados-ia-databricks](https://github.com/lvgalvao/projeto-dados-ia-databricks.git).
+Aula ao vivo do canal [Jornada de Dados](https://www.youtube.com/@JornadaDeDados),
+com roteiro original em [lvgalvao/projeto-dados-ia-databricks](https://github.com/lvgalvao/projeto-dados-ia-databricks.git).
