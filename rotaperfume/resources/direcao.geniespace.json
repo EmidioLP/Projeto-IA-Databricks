@@ -1,0 +1,105 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "1a3f9bf60a2fbc33ab9a2189ea0dd74f",
+        "question": ["Quem eu ligo essa semana?"]
+      },
+      {
+        "id": "292dabe85c415743f5b0e1aa6b37c98e",
+        "question": ["O modelo é bom?"]
+      },
+      {
+        "id": "468cfaa1ce3eab8a34f2e42001433bd3",
+        "question": ["Quanto vale a fila desta semana?"]
+      },
+      {
+        "id": "4ef37e498637a7b5e6125b5148c6eec2",
+        "question": ["Quais clientes estão em risco de churn?"]
+      },
+      {
+        "id": "9a3918d09c2203b4e18d36116699f236",
+        "question": ["Quantas ligações já foram registradas e quantas viraram pedido?"]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      { "identifier": "lakehouse_rotaperfume.gold.clientes_em_risco" },
+      { "identifier": "lakehouse_rotaperfume.gold.fila_semanal" },
+      { "identifier": "lakehouse_rotaperfume.gold.modelo_metricas" },
+      { "identifier": "lakehouse_rotaperfume.gold.ranking_marcas" },
+      { "identifier": "lakehouse_rotaperfume.gold.receita_mensal" },
+      { "identifier": "lakehouse_rotaperfume.gold.retorno_ligacao" },
+      { "identifier": "lakehouse_rotaperfume.gold.score_propensao" }
+    ]
+  },
+  "instructions": {
+    "example_question_sqls": [
+      {
+        "id": "1a3f9bf60a2fbc33ab9a2189ea0dd74f",
+        "question": ["Quem eu ligo essa semana?"],
+        "sql": ["SELECT vendedor, ordem, razao_social, score, faixa, motivo, sugestao FROM lakehouse_rotaperfume.gold.fila_semanal ORDER BY vendedor, ordem"]
+      },
+      {
+        "id": "292dabe85c415743f5b0e1aa6b37c98e",
+        "question": ["O modelo é bom?"],
+        "sql": ["SELECT versao, lift_top200, acertos_top200, taxa_base FROM lakehouse_rotaperfume.gold.modelo_metricas ORDER BY _treinado_em DESC LIMIT 1"]
+      },
+      {
+        "id": "468cfaa1ce3eab8a34f2e42001433bd3",
+        "question": ["Quanto vale a fila desta semana?"],
+        "sql": ["SELECT ROUND(SUM(score * ticket_medio), 2) AS receita_esperada FROM lakehouse_rotaperfume.gold.fila_semanal"]
+      },
+      {
+        "id": "4ef37e498637a7b5e6125b5148c6eec2",
+        "question": ["Quais clientes estão em risco de churn?"],
+        "sql": ["SELECT razao_social, dias_sem_comprar, receita_mensal_media_antes_de_sumir FROM lakehouse_rotaperfume.gold.clientes_em_risco ORDER BY receita_mensal_media_antes_de_sumir DESC LIMIT 10"]
+      },
+      {
+        "id": "9a3918d09c2203b4e18d36116699f236",
+        "question": ["Quantas ligações já foram registradas e quantas viraram pedido?"],
+        "sql": ["SELECT COUNT(*) AS ligacoes_registradas, COUNT(*) FILTER (WHERE status = 'vendeu') AS viraram_pedido FROM lakehouse_rotaperfume.gold.retorno_ligacao"]
+      }
+    ],
+    "text_instructions": [
+      {
+        "id": "9641499fd8b1e5f78ecf3f4c377d753f",
+        "content": [
+          "## PURPOSE",
+          "- Agente de dados para a direção comercial da Rota do Perfume - decide para quem ligar e mede o retorno da fila. Não escreve SQL.",
+          "- Público: diretoria comercial. Assuma fluência de negócio, não técnica.",
+          "- Use SOMENTE estas sete tabelas do schema gold: fila_semanal, score_propensao, modelo_metricas, retorno_ligacao, clientes_em_risco, ranking_marcas, receita_mensal. Nunca consulte bronze nem silver.",
+          "",
+          "## DISAMBIGUATION",
+          "- Score: nota de 0 a 1 da chance do cliente comprar nos próximos 7 dias (gold.score_propensao e gold.fila_semanal).",
+          "- Faixa: Fria/Morna/Quente/Muito quente - faixa do score.",
+          "- Ordem: posição do cliente na fila DO VENDEDOR DELE - reinicia em 1 por vendedor.",
+          "- Motivo: frase que explica por que ligar agora (atraso de ritmo, valor do cliente, lançamento recente).",
+          "- Retorno de ligação: o que o vendedor registrou depois de ligar (status vendeu/vai_pensar/sem_interesse/nao_atendeu), em gold.retorno_ligacao.",
+          "- REGRA DA FILA GLOBAL: a fila é rankeada globalmente por score, sem cota igual por vendedor - quem tem carteira mais quente recebe mais contatos na semana, e isso é esperado, não um desequilíbrio a corrigir.",
+          "- REGRA DE SAZONALIDADE (mesma da Comercial): o pico de vendas é o mês ANTERIOR à data comemorativa (abril, junho, outubro) - dezembro e janeiro são vale esperado, nunca chame isso de queda ou mês ruim.",
+          "",
+          "## MÉTRICAS E REGRAS DE NEGÓCIO",
+          "- Receita esperada da fila = SUM(score * ticket_medio) em gold.fila_semanal. É ESTIMATIVA (probabilidade vezes ticket médio), nunca receita realizada - sempre rotule como 'estimativa' ou 'receita esperada'.",
+          "- A métrica oficial de qualidade do modelo para a direção é lift_top200 (gold.modelo_metricas): lift_top200 = 4,25 significa que os 200 da fila compram 4,25x mais que uma escolha aleatória. Use também acertos_top200 (de quantos, de 200) como leitura simples.",
+          "- NUNCA cite AUC para responder pergunta de negócio - AUC é métrica de quem treina o modelo, não de quem decide ligação. Se só houver AUC disponível para o que foi perguntado, diga que essa leitura não está disponível para esta audiência e ofereça lift_top200 no lugar.",
+          "- gold.retorno_ligacao começa VAZIA e só recebe linhas quando o time registra manualmente. Se a contagem vier zero, diga explicitamente que ninguém registrou retorno ainda - nunca invente um número, e nunca use fila_semanal como se fosse retorno.",
+          "- Um cliente pode ter mais de um retorno registrado ao longo do tempo. Para o estado ATUAL de um cliente, use o registro mais recente por registrado_em.",
+          "",
+          "## CONSTRAINTS",
+          "- Nunca consulte lakehouse_rotaperfume.bronze ou lakehouse_rotaperfume.silver - somente as sete tabelas gold listadas acima.",
+          "- Nunca cite AUC. Nunca chame a receita estimada da fila de receita realizada.",
+          "",
+          "## Instructions you must follow when providing summaries",
+          "- Receita esperada da fila = SUM(score * ticket_medio) em gold.fila_semanal, sempre rotulada como estimativa.",
+          "- Qualidade do modelo = lift_top200 e/ou acertos_top200 de gold.modelo_metricas (versão mais recente, maior _treinado_em). Nunca AUC.",
+          "- Retorno de ligação: conte a partir de gold.retorno_ligacao; se vazio, diga que ninguém registrou ainda. 'Virou pedido' = status = 'vendeu'.",
+          "- Ao descrever o estado de um cliente em gold.retorno_ligacao, use o registro mais recente por registrado_em quando houver mais de um.",
+          "- Quando a receita de dezembro ou janeiro aparecer baixa, explique que é o vale esperado do setor - nunca descreva como queda ou mês ruim."
+        ]
+      }
+    ]
+  }
+}

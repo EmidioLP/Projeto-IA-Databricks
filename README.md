@@ -14,9 +14,9 @@ Usado apenas para fins de estudo e portfólio — não é um projeto em produç�
   que sobe esses CSVs para o Unity Catalog e constrói um pipeline em camadas
   (raw → bronze → silver → gold), tudo como código.
 - **`.llm/`** — os roteiros de aula (prompts) que guiaram cada entrega do
-  `rotaperfume`, em duas trilhas: `engenharia-de-dados/` (as seis entregas
-  abaixo) e `ciencia-de-dados/` (a trilha de features e modelo, começando
-  pela entrega de features).
+  `rotaperfume`, em três trilhas: `engenharia-de-dados/` (as seis entregas
+  abaixo), `ciencia-de-dados/` (features, modelo e fila) e `app-e-genie/`
+  (em andamento, fechando o loop entre a fila e o time comercial).
 
 ## Progresso
 
@@ -71,6 +71,17 @@ dessa gold:
   `checar_disponibilidade`) que um agente consulta, uma página nova no
   dashboard e o Genie Space atualizado para nunca inventar número, nome de
   cliente ou quantidade de estoque.
+
+Uma terceira trilha, app e genie, começou a fechar o loop entre a fila e o
+time comercial:
+
+- [x] **Retorno da ligação** — `gold.retorno_ligacao`: a única tabela do
+  projeto cujo dado vem do time comercial, não do pipeline
+  (`CREATE TABLE IF NOT EXISTS`, nunca `CREATE OR REPLACE` — um redeploy não
+  pode apagar o que já foi registrado). E um segundo Genie space, "Rota do
+  Perfume - Direção", com só 7 fontes e instruções escritas para UMA decisão
+  (ligar ou não): nunca cita AUC (a métrica é `lift_top200`), e sempre avisa
+  quando a fila ainda não tem retorno registrado em vez de inventar número.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
 [`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).

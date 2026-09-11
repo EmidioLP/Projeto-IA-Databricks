@@ -23,14 +23,22 @@
 #                                   um agente consulta (priorizar_carteira, contexto_cliente,
 #                                   sugerir_produtos, checar_disponibilidade)
 #
+#   app e genie:
+#   [x] prompt 1: gold_retorno_ligacao - gold.retorno_ligacao (CREATE TABLE IF NOT EXISTS: única
+#                                   tabela do projeto cujo dado vem do time, não do pipeline) +
+#                                   segundo Genie space ("Rota do Perfume - Direção")
+#
 # raw_conferencia -> bronze_ingestao: sequencial. As quatro tasks silver_*
 # dependem só de bronze_ingestao e rodam em paralelo entre si. As tasks
 # gold_* seguem em cadeia (dimensoes -> fato_vendas -> marts) e daí se
 # ramificam em três cadeias paralelas: testes -> ml_features -> ml_modelo ->
 # ml_fila (o treino não pode rodar em dado que ainda não passou nos testes de
-# qualidade, mas não precisa esperar as views de negócio), e
-# metricas_de_negocio -> auditoria_de_metadado (a auditoria depende das
-# views que metricas_de_negocio acabou de criar, não só de gold_marts).
+# qualidade, mas não precisa esperar as views de negócio), metricas_de_negocio
+# -> auditoria_de_metadado (a auditoria depende das views que
+# metricas_de_negocio acabou de criar, não só de gold_marts - e também de
+# gold_retorno_ligacao, para nunca rodar antes da tabela existir), e
+# gold_retorno_ligacao (não depende de views de negócio nem de testes -
+# nasce vazia e só precisa que o schema gold já exista).
 resources:
   jobs:
     rotaperfume_pipeline:
@@ -135,9 +143,17 @@ resources:
             warehouse_id: ${var.warehouse_id}
             file:
               path: ../src/gold/09-metricas-negocio.sql
+        - task_key: gold_retorno_ligacao
+          depends_on:
+            - task_key: gold_marts
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/14-retorno-ligacao.sql
         - task_key: auditoria_de_metadado
           depends_on:
             - task_key: metricas_de_negocio
+            - task_key: gold_retorno_ligacao
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file:

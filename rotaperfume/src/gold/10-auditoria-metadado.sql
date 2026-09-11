@@ -19,7 +19,8 @@ FROM (
   WHERE table_schema = 'gold' AND (comment IS NULL OR comment = '')
 );
 
--- Teste B: toda coluna de fato_vendas e das 6 views de negócio tem COMMENT.
+-- Teste B: toda coluna de fato_vendas, das 6 views de negócio e de
+-- retorno_ligacao tem COMMENT.
 SELECT
   'auditoria_2_colunas_sem_comment' AS teste,
   n AS valor_calculado,
@@ -33,7 +34,7 @@ FROM (
   WHERE table_schema = 'gold'
     AND table_name IN (
       'fato_vendas', 'receita_mensal', 'ranking_marcas', 'margem_por_categoria',
-      'clientes_em_risco', 'efeito_lancamento', 'ruptura_por_marca'
+      'clientes_em_risco', 'efeito_lancamento', 'ruptura_por_marca', 'retorno_ligacao'
     )
     AND (comment IS NULL OR comment = '')
 );
