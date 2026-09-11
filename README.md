@@ -13,6 +13,10 @@ Usado apenas para fins de estudo e portfólio — não é um projeto em produç�
 - **`rotaperfume/`** — o projeto principal: um [Databricks Asset Bundle](https://docs.databricks.com/dev-tools/bundles/index.html)
   que sobe esses CSVs para o Unity Catalog e constrói um pipeline em camadas
   (raw → bronze → silver → gold), tudo como código.
+- **`rotaperfume-direcao/`** — um [Databricks App](https://docs.databricks.com/en/dev-tools/databricks-apps/index.html)
+  (AppKit/React) para a direção comercial: os 4 números da semana, a fila
+  filtrável por vendedor e o Genie Space da direção embutido. Lê só o que o
+  `rotaperfume` já produziu — nenhuma tabela nova.
 - **`.llm/`** — os roteiros de aula (prompts) que guiaram cada entrega do
   `rotaperfume`, em três trilhas: `engenharia-de-dados/` (as seis entregas
   abaixo), `ciencia-de-dados/` (features, modelo e fila) e `app-e-genie/`
@@ -82,9 +86,15 @@ time comercial:
   Perfume - Direção", com só 7 fontes e instruções escritas para UMA decisão
   (ligar ou não): nunca cita AUC (a métrica é `lift_top200`), e sempre avisa
   quando a fila ainda não tem retorno registrado em vez de inventar número.
+- [x] **O app** — `rotaperfume-direcao`, um Databricks App (AppKit/React) só
+  de leitura: tela "A semana" com os 4 números (contatos, receita esperada,
+  conversão prevista contra a taxa base, já trabalhados) e a fila filtrável
+  por vendedor; tela "Perguntar" com o Genie Space da direção embutido,
+  identidade de quem está logado e aviso de que a resposta é gerada por IA.
 
 Detalhes de arquitetura e comandos de desenvolvimento estão em
-[`CLAUDE.md`](CLAUDE.md) e em [`rotaperfume/README.md`](rotaperfume/README.md).
+[`CLAUDE.md`](CLAUDE.md), [`rotaperfume/README.md`](rotaperfume/README.md) e
+[`rotaperfume-direcao/README.md`](rotaperfume-direcao/README.md).
 
 ## Créditos
 
